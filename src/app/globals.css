@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #e9e1ff;
+  --ink: #1b1730;
+  --muted: #8e8aa3;
+  --line: #efeaf8;
+  --purple: #6c4dff;
+  --purple-soft: #f1eaff;
+  --mint: #c9f8e4;
+  --lilac: #e4d4ff;
+  --sand: #ffe6a8;
+  --lime: #d9f5b0;
+  --positive: #128a4a;
+  --negative: #e11d48;
+}
+
+@theme inline {
+  --font-sans: var(--font-bangla);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-purple: var(--purple);
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-bangla), sans-serif;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #d9ccff;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

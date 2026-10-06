@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Bengali } from "next/font/google";
 import { Providers } from "@/lib/store";
+import { SessionProvider } from "@/lib/session";
+import { getSessionProfile } from "@/lib/supabase/server";
 import { Shell } from "@/components/shell";
 import "./globals.css";
 
@@ -21,12 +23,15 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const profile = await getSessionProfile();
   return (
     <html lang="bn" className={`${bangla.variable} h-full antialiased`}>
       <body className="min-h-full">
         <Providers>
-          <Shell>{children}</Shell>
+          <SessionProvider profile={profile}>
+            <Shell>{children}</Shell>
+          </SessionProvider>
         </Providers>
       </body>
     </html>

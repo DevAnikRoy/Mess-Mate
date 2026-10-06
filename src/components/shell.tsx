@@ -4,8 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { IconBag, IconBell, IconBill, IconDuty, IconHome, IconLogout, IconMeal, IconReport, IconSearch } from "./icons";
+import { Avatar } from "./avatar";
 import { CURRENT_USER, MESS_NAME, memberById, members, TODAY, upcomingDuty } from "@/lib/model";
+import { greetingName } from "@/lib/profile";
+import { useSession } from "@/lib/session";
 import { useMess } from "@/lib/store";
+import { createClient } from "@/lib/supabase/client";
 
 const nav = [
   { href: "/", label: "ড্যাশবোর্ড", icon: IconHome },
@@ -26,12 +30,24 @@ const mobile = [
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const router = useRouter();
+  const session = useSession();
   const { state } = useMess();
   const [query, setQuery] = useState("");
   const [openNotes, setOpenNotes] = useState(false);
   const [more, setMore] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const nextDuty = upcomingDuty(state);
   const me = memberById(CURRENT_USER);
+  const hello = session ? greetingName(session.name) : me.short;
+
+  async function leave() {
+    setLeaving(true);
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
+
   const markedToday = Boolean(state.meals[`${CURRENT_USER}|${TODAY}`]) || state.kitchenClosed.includes(TODAY);
 
   const notes = useMemo(() => {
@@ -52,6 +68,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
     const shops = state.bazaar.filter((row) => row.note.includes(q) || row.amount.toString().includes(q)).slice(0, 4);
     return { people, shops };
   }, [query, state.bazaar]);
+
+  if (path === "/login" || path.startsWith("/auth")) return children;
 
   return (
     <div className="min-h-dvh bg-[#E9E1FF] lg:p-5">
@@ -86,7 +104,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 : "এই মাসে আর ডিউটি বাকি নেই।"}
             </p>
           </div>
-          <button className="mt-4 flex items-center gap-3 px-3 py-2 text-sm text-[#5C5872]" type="button">
+          <button className="mt-4 flex items-center gap-3 px-3 py-2 text-sm text-[#5C5872] disabled:opacity-60" disabled={leaving} onClick={leave} type="button">
             <IconLogout className="h-5 w-5" />
             বের হন
           </button>
@@ -95,7 +113,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="min-w-0 flex-1 pb-24 lg:pb-8">
           <header className="flex items-center gap-3 px-4 pt-4 lg:px-8 lg:pt-6">
             <div className="min-w-0 flex-1">
-              <p className="truncate text-lg font-semibold lg:text-xl">হ্যালো {me.short},</p>
+              <p className="truncate text-lg font-semibold lg:text-xl">হ্যালো {hello},</p>
               <p className="text-xs text-[#8E8AA3] lg:hidden">২ অক্টোবর · {MESS_NAME}</p>
             </div>
             <label className="relative hidden w-[320px] lg:block">
@@ -126,8 +144,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
               <IconBell className="h-5 w-5" />
               <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#6C4DFF]" />
             </button>
-            <Link href={`/members/${CURRENT_USER}`} className="grid h-11 w-11 place-items-center rounded-full bg-[#6C4DFF] text-sm font-semibold text-white">
-              {me.short.slice(0, 1)}
+            <Link href={session ? "/account" : `/members/${CURRENT_USER}`} className="block h-11 w-11 overflow-hidden rounded-full" aria-label="প্রোফাইল">
+              <Avatar name={session?.name ?? me.short} src={session?.avatarUrl ?? null} className="h-11 w-11 rounded-full text-sm" />
             </Link>
           </header>
           {openNotes && (
@@ -165,6 +183,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-x-3 bottom-20 z-30 rounded-3xl bg-white p-3 shadow-[0_12px_40px_rgba(40,20,80,0.12)] lg:hidden">
           <Link href="/bills" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">ঘরের খরচ</Link>
           <Link href="/duties" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">ডিউটি</Link>
+          <Link href="/account" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">প্রোফাইল</Link>
+          <button className="block w-full rounded-2xl px-3 py-3 text-left text-sm hover:bg-[#F7F4FF] disabled:opacity-60" disabled={leaving} onClick={leave} type="button">বের হন</button>
         </div>
       )}
     </div>

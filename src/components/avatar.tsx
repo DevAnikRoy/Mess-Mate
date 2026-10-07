@@ -30,6 +30,10 @@ export function Avatar({
       alt=""
       referrerPolicy="no-referrer"
       className={`object-cover ${className}`}
+      ref={(node) => {
+        // The image may have failed before hydration attached onError.
+        if (node?.complete && node.naturalWidth === 0) setFailed(true);
+      }}
       onError={() => setFailed(true)}
     />
   );

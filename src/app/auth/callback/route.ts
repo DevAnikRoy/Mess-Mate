@@ -1,31 +1,23 @@
-import { NextResponse } from "next/server";
-import { profileFromUser } from "@/lib/profile";
+import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const home = new URL("/", origin);
+function safeNext(raw: string | undefined) {
+  return raw && /^\/join\/[A-Za-z0-9]{4,16}$/.test(raw) ? raw : "/";
+}
 
-  if (!code) return NextResponse.redirect(new URL("/login?error=callback", origin));
+export async function GET(request: NextRequest) {
+  const { searchParams, origin } = request.nextUrl;
+  const code = searchParams.get("code");
+  const failed = NextResponse.redirect(new URL("/login?error=callback", origin));
+  if (!code) return failed;
 
   const supabase = await createClient();
-  if (!supabase) return NextResponse.redirect(new URL("/login?error=callback", origin));
+  if (!supabase) return failed;
 
   const { error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) return NextResponse.redirect(new URL("/login?error=callback", origin));
+  if (error) return failed;
 
-  const { data } = await supabase.auth.getUser();
-  if (data.user) {
-    const profile = profileFromUser(data.user);
-    await supabase.from("profiles").upsert({
-      id: data.user.id,
-      full_name: profile.name,
-      avatar_url: profile.provider === "google" ? profile.avatarUrl : null,
-      email: profile.email,
-      updated_at: new Date().toISOString(),
-    });
-  }
-
-  return NextResponse.redirect(home);
+  const response = NextResponse.redirect(new URL(safeNext(request.cookies.get("mm_next")?.value), origin));
+  response.cookies.delete("mm_next");
+  return response;
 }

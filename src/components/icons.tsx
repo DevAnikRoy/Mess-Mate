@@ -93,6 +93,24 @@ export function IconPlus({ className }: Props) {
   );
 }
 
+export function IconUsers({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <circle {...stroke} cx="9" cy="8" r="3.2" />
+      <path {...stroke} d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 5.2a3 3 0 0 1 0 5.6M17.5 14.2A5 5 0 0 1 20.5 19" />
+    </svg>
+  );
+}
+
+export function IconCopy({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <rect {...stroke} x="8" y="8" width="12" height="12" rx="2.5" />
+      <path {...stroke} d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+    </svg>
+  );
+}
+
 export function IconLogout({ className }: Props) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden>

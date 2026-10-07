@@ -15,19 +15,14 @@ export function takaExact(amount: number) {
 }
 
 export function mealText(amount: number) {
-  if (!Number.isFinite(amount)) return "০";
+  if (!Number.isFinite(amount)) return "0";
   return Number.isInteger(amount) ? String(amount) : amount.toFixed(1);
 }
 
-export function bnDay(iso: string) {
-  const day = Number(iso.slice(8, 10));
-  return String(day);
-}
-
-export function monthLabel(month: string) {
-  return month === "2026-09" ? "সেপ্টেম্বর ২০২৬" : "অক্টোবর ২০২৬";
-}
-
-export function shortMonth(month: string) {
-  return month === "2026-09" ? "সেপ্টেম্বর" : "অক্টোবর";
+/** Accepts Bengali or English digits; returns null when it is not a positive amount. */
+export function parseAmount(raw: string) {
+  const text = raw.replace(/[০-৯]/g, (digit) => String("০১২৩৪৫৬৭৮৯".indexOf(digit))).replace(/,/g, "").trim();
+  if (!/^\d+(\.\d{1,2})?$/.test(text)) return null;
+  const value = Number(text);
+  return value > 0 && value < 10_000_000 ? value : null;
 }

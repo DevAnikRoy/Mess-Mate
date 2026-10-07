@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Noto_Sans_Bengali } from "next/font/google";
-import { Providers } from "@/lib/store";
+import { MessProvider } from "@/lib/store";
 import { SessionProvider } from "@/lib/session";
-import { getSessionProfile } from "@/lib/supabase/server";
+import { getAppContext } from "@/lib/supabase/server";
 import { Shell } from "@/components/shell";
 import "./globals.css";
 
@@ -24,15 +24,15 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const profile = await getSessionProfile();
+  const { profile, mess } = await getAppContext();
   return (
     <html lang="bn" className={`${bangla.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <Providers>
-          <SessionProvider profile={profile}>
+        <SessionProvider profile={profile}>
+          <MessProvider key={mess?.mess.id ?? "none"} context={mess}>
             <Shell>{children}</Shell>
-          </SessionProvider>
-        </Providers>
+          </MessProvider>
+        </SessionProvider>
       </body>
     </html>
   );

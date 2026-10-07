@@ -84,7 +84,7 @@ export function LoginForm({ configured, callbackError }: { configured: boolean; 
       }
     }
 
-    router.push("/");
+    router.replace("/");
     router.refresh();
   }
 

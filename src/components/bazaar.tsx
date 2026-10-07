@@ -43,8 +43,8 @@ export function Bazaar() {
   }
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-      <section>
+    <div className="mx-auto grid max-w-5xl grid-cols-1 gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <section className="min-w-0">
         <p className="text-xs text-[#8E8AA3]">খাতার মতো লিখুন</p>
         <h1 className="text-2xl font-bold">বাজার</h1>
         <textarea
@@ -77,10 +77,12 @@ export function Bazaar() {
         <p className="mt-2 text-xs text-[#8E8AA3]">হিসাবে শুধু এই নিশ্চিত টাকা ঢুকবে। আসল লেখা রয়ে যাবে। আজকের মধ্যে নিজে বদলাতে পারবেন, পরে ম্যানেজার।</p>
       </section>
 
-      <section className="rounded-[24px] border border-[#F3EEF9] p-4">
+      <section className="min-w-0 rounded-[24px] border border-[#F3EEF9] p-4">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-semibold">{monthName(month)} মাসের বাজার</h2>
-          <MonthPicker />
+          <div className="min-w-0 max-w-full">
+            <MonthPicker />
+          </div>
         </div>
         {!monthReady(month) ? (
           <MonthLoading />

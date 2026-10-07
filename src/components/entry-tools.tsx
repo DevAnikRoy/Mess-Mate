@@ -35,13 +35,13 @@ export function WhoWhen({
   const floor = useEditFloor();
   if (!isManager) return null;
   return (
-    <div className="mt-3 grid grid-cols-2 gap-2">
-      <label className="text-xs text-[#8E8AA3]">
+    <div className="mt-3 grid grid-cols-1 gap-2 min-[400px]:grid-cols-2">
+      <label className="min-w-0 text-xs text-[#8E8AA3]">
         কে দিয়েছে
         <select
           value={memberId}
           onChange={(event) => onMember(event.target.value)}
-          className="mt-1 h-11 w-full rounded-2xl bg-[#F7F5FC] px-3 text-sm text-[#1B1730] outline-none"
+          className="mt-1 h-11 w-full min-w-0 truncate rounded-2xl bg-[#F7F5FC] px-3 text-sm text-[#1B1730] outline-none"
         >
           {activeMembers.map((member) => (
             <option key={member.id} value={member.id}>
@@ -50,7 +50,7 @@ export function WhoWhen({
           ))}
         </select>
       </label>
-      <label className="text-xs text-[#8E8AA3]">
+      <label className="min-w-0 text-xs text-[#8E8AA3]">
         তারিখ
         <input
           type="date"
@@ -58,7 +58,7 @@ export function WhoWhen({
           min={floor}
           max={today}
           onChange={(event) => event.target.value && onDate(event.target.value)}
-          className="mt-1 h-11 w-full rounded-2xl bg-[#F7F5FC] px-3 text-sm text-[#1B1730] outline-none"
+          className="mt-1 block h-11 w-full min-w-0 appearance-none rounded-2xl bg-[#F7F5FC] px-3 text-left text-sm text-[#1B1730] outline-none"
         />
       </label>
     </div>

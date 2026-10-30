@@ -1,0 +1,59 @@
+{
+  "expo": {
+    "name": "মেসমেট",
+    "slug": "mess-mate",
+    "scheme": "messmate",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#E9E1FF"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.messmate.app"
+    },
+    "android": {
+      "package": "com.messmate.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E9E1FF",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": false,
+          "data": [{ "scheme": "messmate" }],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-web-browser",
+      "expo-sharing",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#E9E1FF"
+        }
+      ],
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}

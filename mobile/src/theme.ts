@@ -1,0 +1,17 @@
+export const colors = {
+  bg: "#E9E1FF",
+  ink: "#1B1730",
+  muted: "#8E8AA3",
+  purple: "#6C4DFF",
+  soft: "#F1EAFF",
+  paper: "#FFFFFF",
+  line: "#F3EEF9",
+  field: "#F6F4FB",
+  good: "#128A4A",
+  bad: "#E11D48",
+  mint: "#E9FBE8",
+  mintInk: "#4D6B4A",
+  warn: "#FFF6E8",
+  warnInk: "#A16207",
+  dark: "#17171C",
+};

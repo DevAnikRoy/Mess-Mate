@@ -1,0 +1,78 @@
+import { useState } from "react";
+import { Text, View } from "react-native";
+import { router } from "expo-router";
+import { useSession } from "../lib/session";
+import { useMaybeMess } from "../lib/store";
+import { createClient } from "../lib/supabase";
+import { useReload } from "../providers";
+import { colors } from "../theme";
+import { Avatar, Button, ErrorText, Field, Group, Row, Screen } from "../ui";
+
+export function AccountScreen() {
+  const session = useSession();
+  const store = useMaybeMess();
+  const reload = useReload();
+  const [busy, setBusy] = useState(false);
+  const [name, setName] = useState(session?.name ?? "");
+  const [saved, setSaved] = useState("");
+  const [error, setError] = useState("");
+
+  async function leave() {
+    setBusy(true);
+    const supabase = createClient();
+    if (supabase) await supabase.auth.signOut();
+    setBusy(false);
+  }
+
+  async function rename() {
+    const trimmed = name.trim().slice(0, 60);
+    const supabase = createClient();
+    if (!supabase || !session) return;
+    if (!trimmed) return setError("নাম খালি রাখা যাবে না।");
+    setBusy(true);
+    setError("");
+    setSaved("");
+    const [{ error: profileError }] = await Promise.all([
+      supabase.from("profiles").update({ full_name: trimmed, updated_at: new Date().toISOString() }).eq("id", session.id),
+      supabase.auth.updateUser({ data: { full_name: trimmed } }),
+    ]);
+    setBusy(false);
+    if (profileError) return setError("নাম সেভ করা যায়নি। আবার চেষ্টা করুন।");
+    setSaved("নাম সেভ হয়েছে।");
+    await reload();
+  }
+
+  if (!session) {
+    return (
+      <Screen>
+        <Text style={{ fontSize: 22, fontWeight: "700" }}>প্রোফাইল</Text>
+        <Text style={{ color: colors.muted, marginTop: 8 }}>প্রোফাইল দেখতে আগে ঢুকুন।</Text>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <View style={{ alignItems: "center", paddingVertical: 12 }}>
+        <Avatar name={session.name} src={session.avatarUrl} size={96} />
+        <Text style={{ fontSize: 24, fontWeight: "800", marginTop: 12 }}>{session.name}</Text>
+        <Text style={{ color: colors.muted }}>{session.email}</Text>
+      </View>
+      <Group>
+        <Row title="লগইন" trailing={<Text style={{ color: colors.purple, fontWeight: "700" }}>{session.provider === "google" ? "গুগল" : "ইমেইল"}</Text>} last />
+      </Group>
+      <Group title="মেসে যে নামে দেখাবে">
+        <View style={{ padding: 16, gap: 10 }}>
+          <Field value={name} onChangeText={setName} maxLength={60} autoCapitalize="words" />
+          <ErrorText>{error}</ErrorText>
+          {saved ? <Text style={{ color: colors.good }}>{saved}</Text> : null}
+          <Button label="নাম সেভ" disabled={!name.trim() || name.trim() === session.name} busy={busy} onPress={rename} />
+        </View>
+      </Group>
+      <Group>
+        {!store && <Row title="মেস খুলুন বা যোগ দিন" onPress={() => router.push("/onboarding")} />}
+        <Row title="বের হন" danger onPress={leave} last />
+      </Group>
+    </Screen>
+  );
+}

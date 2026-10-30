@@ -164,6 +164,26 @@ npm run lint       # eslint
 
 ---
 
+## Android app
+
+The website is unchanged. A React Native (Expo) client lives in [`mobile/`](mobile). It talks to the same Supabase project and uses the same mess rules.
+
+```bash
+cd mobile
+npx expo start
+```
+
+Open that QR code in Expo Go on an Android phone. To build an APK without Android Studio:
+
+```bash
+cd mobile
+npx eas-cli@latest build -p android --profile preview
+```
+
+Add `messmate://auth/callback` to Supabase Auth redirect URLs so Google sign-in works on the phone. Details are in [`mobile/README.md`](mobile/README.md).
+
+---
+
 ## Roadmap
 
 These parts are planned but **not built yet**:

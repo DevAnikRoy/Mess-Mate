@@ -1,0 +1,7 @@
+/mobile
+.git
+*.apk
+*.aab
+/node_modules
+/.next
+/coverage

@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const NEXT_COOKIE = "mm_next";
 
 function isPublic(pathname: string) {
-  return pathname === "/login" || pathname.startsWith("/auth/");
+  return pathname === "/login" || pathname.startsWith("/auth/") || pathname.startsWith("/.well-known/");
 }
 
 function redirectKeepingCookies(request: NextRequest, target: string, current: NextResponse) {

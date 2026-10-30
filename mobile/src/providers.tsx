@@ -1,6 +1,7 @@
 import { createContext, type ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { Redirect, usePathname } from "expo-router";
+import { listenForAuthLinks } from "./lib/auth";
 import { loadAppContext } from "./lib/context";
 import type { MessContext } from "./lib/model";
 import type { SessionProfile } from "./lib/profile";
@@ -28,12 +29,16 @@ export function AppProviders({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const supabase = createClient();
+    const stopLinks = listenForAuthLinks();
     void reload();
-    if (!supabase) return;
+    if (!supabase) return () => stopLinks();
     const { data } = supabase.auth.onAuthStateChange(() => {
       void reload();
     });
-    return () => data.subscription.unsubscribe();
+    return () => {
+      stopLinks();
+      data.subscription.unsubscribe();
+    };
   }, [reload]);
 
   if (!boot) {

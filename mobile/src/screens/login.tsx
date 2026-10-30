@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Platform, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";
-import { makeRedirectUri } from "expo-auth-session";
+import { signInWithGoogle, webRedirect } from "../lib/auth";
 import { createClient, supabaseConfigured } from "../lib/supabase";
 import { colors } from "../theme";
 import { Button, ErrorText, Field, Screen, ripple } from "../ui";
@@ -28,30 +28,13 @@ export function LoginScreen() {
   const [notice, setNotice] = useState("");
 
   async function withGoogle() {
-    const supabase = createClient();
-    if (!supabase) return;
     setBusy(true);
     setError("");
-    const redirectTo = makeRedirectUri({ scheme: "messmate", path: "auth/callback" });
-    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo, skipBrowserRedirect: Platform.OS !== "web" },
-    });
-    if (oauthError || !data.url) {
-      setError(authError(oauthError?.message ?? ""));
-      setBusy(false);
-      return;
-    }
-    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
-    if (result.type === "success") {
-      const url = new URL(result.url);
-      const code = url.searchParams.get("code") ?? url.hash.match(/code=([^&]+)/)?.[1];
-      if (code) {
-        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-        if (exchangeError) setError(authError(exchangeError.message));
-      } else {
-        setError("গুগল থেকে ফিরে আসা যায়নি। আবার চেষ্টা করুন।");
-      }
+    try {
+      const ok = await signInWithGoogle();
+      if (!ok) setError("গুগল থেকে অ্যাপে ফিরে আসা যায়নি। আবার চেষ্টা করুন।");
+    } catch (caught) {
+      setError(authError(caught instanceof Error ? caught.message : ""));
     }
     setBusy(false);
   }
@@ -72,7 +55,7 @@ export function LoginScreen() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { full_name: trimmed } },
+        options: { data: { full_name: trimmed }, emailRedirectTo: webRedirect },
       });
       if (signUpError) {
         setError(authError(signUpError.message));
@@ -100,7 +83,7 @@ export function LoginScreen() {
       <Text style={{ fontSize: 13, fontWeight: "700", color: colors.purple, marginTop: 36 }}>মেসমেট</Text>
       <Text style={{ fontSize: 32, fontWeight: "800", color: colors.ink, marginTop: 8 }}>ঢুকুন</Text>
       <Text style={{ color: colors.muted, marginTop: 6, marginBottom: 28, lineHeight: 22 }}>
-        মেসের হিসাব ফোনেই চলবে। ওয়েবসাইট খুলতে হবে না।
+        গুগল খুললে সেখানে ঢুকুন। ব্রাউজার বন্ধ করলে অ্যাপেই লগইন থাকবে।
       </Text>
       {!supabaseConfigured() ? (
         <Text style={{ color: colors.muted, lineHeight: 22 }}>

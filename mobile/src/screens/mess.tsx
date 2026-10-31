@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import { router, useLocalSearchParams } from "expo-router";
 import { confirm, shareText } from "../confirm";
+import { IconCopy } from "../icons";
 import { dateLabel } from "../lib/dates";
 import { explain } from "../lib/errors";
 import type { MealMark, Member } from "../lib/model";
@@ -11,7 +12,9 @@ import { createClient } from "../lib/supabase";
 import { useReload } from "../providers";
 import { SlotPicker } from "./onboarding";
 import { colors } from "../theme";
-import { Avatar, Button, Field, Group, Row, Screen, usePullReload } from "../ui";
+import { Avatar, Screen, usePullReload } from "../ui";
+
+const SITE = (process.env.EXPO_PUBLIC_SITE_URL ?? "https://mess-mate-beryl.vercel.app").replace(/\/$/, "");
 
 export function MessScreen() {
   const { mess, members, me, isManager, say } = useMess();
@@ -24,7 +27,7 @@ export function MessScreen() {
   const [busy, setBusy] = useState<string | null>(null);
   const active = members.filter((member) => !member.leftOn);
   const former = members.filter((member) => member.leftOn);
-  const link = `https://messmate.app/join/${code}`;
+  const link = `${SITE}/join/${code}`;
   const dirty = name.trim() !== mess.name || slots.b !== mess.slots.b || slots.l !== mess.slots.l || slots.d !== mess.slots.d;
 
   async function copy(text: string) {
@@ -55,19 +58,6 @@ export function MessScreen() {
     if (error) return say(explain(error));
     say("মেসের তথ্য সেভ হয়েছে।");
     await reload();
-  }
-
-  function memberActions(member: Member) {
-    if (!isManager || member.id === me.id) {
-      router.push(`/members/${member.id}`);
-      return;
-    }
-    Alert.alert(member.name, undefined, [
-      { text: "হিসাব দেখুন", onPress: () => router.push(`/members/${member.id}`) },
-      { text: "ম্যানেজার বানান", onPress: () => makeManager(member) },
-      { text: "বাদ দিন", style: "destructive", onPress: () => remove(member) },
-      { text: "বাতিল", style: "cancel" },
-    ]);
   }
 
   async function makeManager(member: Member) {
@@ -107,58 +97,99 @@ export function MessScreen() {
 
   return (
     <Screen onRefresh={onRefresh} refreshing={refreshing}>
+      <Text style={{ color: colors.muted, fontSize: 12 }}>মেস ও সদস্য</Text>
+      <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 16 }}>{mess.name}</Text>
       {welcome && isManager && (
-        <View style={{ backgroundColor: colors.mint, borderRadius: 16, padding: 14, marginBottom: 12 }}>
+        <View style={{ backgroundColor: colors.mint, borderRadius: 24, padding: 16, marginBottom: 16 }}>
           <Text style={{ fontWeight: "700" }}>মেস খোলা হয়েছে</Text>
-          <Text style={{ color: colors.mintInk, marginTop: 4 }}>নিচের কোড সদস্যদের পাঠান।</Text>
+          <Text style={{ color: colors.mintInk, marginTop: 4, lineHeight: 22 }}>নিচের লিংক বা কোড সদস্যদের পাঠান। তারা নিজের গুগল বা ইমেইল দিয়ে ঢুকে যোগ দেবে।</Text>
         </View>
       )}
       {isManager && (
-        <View style={{ backgroundColor: colors.purple, borderRadius: 16, padding: 18, marginBottom: 16 }}>
+        <View style={{ backgroundColor: colors.purple, borderRadius: 28, padding: 20, marginBottom: 16 }}>
           <Text style={{ color: "rgba(255,255,255,0.8)" }}>ইনভাইট কোড</Text>
-          <Text style={{ color: "#fff", fontSize: 28, fontWeight: "800", letterSpacing: 4, marginTop: 6 }}>{code}</Text>
-          <View style={{ gap: 8, marginTop: 14 }}>
-            <Button label="লিংক পাঠান" kind="ghost" onPress={() => shareText(`${mess.name} মেসে যোগ দিতে: ${link}\nকোড: ${code}`)} />
-            <Button label="কোড কপি" kind="ghost" onPress={() => copy(code)} />
-            <Button label="নতুন কোড" kind="ghost" busy={busy === "code"} onPress={regenerate} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 8 }}>
+            <Text style={{ color: "#fff", fontSize: 28, fontWeight: "700", letterSpacing: 4 }}>{code}</Text>
+            <Pressable onPress={() => copy(code)} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" }}>
+              <IconCopy />
+            </Pressable>
+          </View>
+          <Text style={{ marginTop: 12, color: "#fff", backgroundColor: "rgba(255,255,255,0.15)", borderRadius: 16, padding: 10, fontSize: 12 }}>{link}</Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 }}>
+            <Pressable onPress={() => shareText(`${mess.name} মেসে যোগ দিতে এই লিংকে ঢুকুন: ${link}\nকোড: ${code}`)} style={inviteBtn("#fff")}>
+              <Text style={{ color: colors.purple, fontWeight: "700" }}>লিংক পাঠান</Text>
+            </Pressable>
+            <Pressable onPress={() => copy(link)} style={inviteBtn("rgba(255,255,255,0.2)")}>
+              <Text style={{ color: "#fff", fontWeight: "700" }}>লিংক কপি</Text>
+            </Pressable>
+            <Pressable onPress={regenerate} disabled={busy === "code"} style={inviteBtn("rgba(255,255,255,0.1)")}>
+              <Text style={{ color: "#fff" }}>{busy === "code" ? "হচ্ছে…" : "নতুন কোড"}</Text>
+            </Pressable>
           </View>
         </View>
       )}
-      <Group title={`সদস্য (${active.length} জন)`}>
-        {active.map((member, index) => (
-          <Row
-            key={member.id}
-            title={`${member.name}${member.id === me.id ? " (আপনি)" : ""}`}
-            subtitle={`${member.role === "manager" ? "ম্যানেজার" : "সদস্য"} · ${dateLabel(member.joinedOn)} থেকে`}
-            leading={<Avatar name={member.name} src={member.avatarUrl} size={40} />}
-            onPress={() => memberActions(member)}
-            last={index === active.length - 1}
-          />
-        ))}
-      </Group>
-      {former.length > 0 && (
-        <Group title="আগের সদস্য">
-          <Row title={former.map((member) => member.name).join(", ")} last />
-        </Group>
-      )}
-      {isManager && (
-        <Group title="মেস সেটিংস">
-          <View style={{ padding: 16, gap: 12 }}>
-            <Field value={name} onChangeText={(value) => setName(value.slice(0, 60))} autoCapitalize="words" />
-            <SlotPicker value={slots} onChange={setSlots} />
-            <Button label="সেভ করুন" disabled={!dirty} busy={busy === "save"} onPress={save} />
+      <View style={{ borderRadius: 28, borderWidth: 1, borderColor: colors.line, padding: 16, marginBottom: 16 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+          <Text style={{ fontWeight: "700" }}>সদস্য ({active.length} জন)</Text>
+          {!isManager && <Text style={{ fontSize: 12, color: colors.muted }}>কোড লাগলে ম্যানেজারকে বলুন</Text>}
+        </View>
+        {active.map((member) => (
+          <View key={member.id} style={{ flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.line }}>
+            <Avatar name={member.name} src={member.avatarUrl} size={44} />
+            <Pressable onPress={() => router.push(`/members/${member.id}`)} style={{ flex: 1 }}>
+              <Text style={{ fontWeight: "700" }} numberOfLines={1}>
+                {member.name}
+                {member.id === me.id ? <Text style={{ fontWeight: "400", color: colors.muted }}> (আপনি)</Text> : null}
+              </Text>
+              <Text style={{ fontSize: 12, color: colors.muted }}>
+                {member.role === "manager" ? "ম্যানেজার" : "সদস্য"} · {dateLabel(member.joinedOn)} থেকে
+              </Text>
+            </Pressable>
+            {isManager && member.id !== me.id && (
+              <View style={{ gap: 6 }}>
+                <Pressable onPress={() => makeManager(member)} disabled={busy !== null} style={{ backgroundColor: colors.soft, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
+                  <Text style={{ color: colors.purple, fontSize: 12, fontWeight: "700" }}>ম্যানেজার</Text>
+                </Pressable>
+                <Pressable onPress={() => remove(member)} disabled={busy !== null} style={{ backgroundColor: colors.badBg, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6 }}>
+                  <Text style={{ color: colors.bad, fontSize: 12, fontWeight: "700" }}>বাদ দিন</Text>
+                </Pressable>
+              </View>
+            )}
           </View>
-        </Group>
+        ))}
+        {former.length > 0 && <Text style={{ marginTop: 8, fontSize: 12, color: colors.muted }}>আগের সদস্য: {former.map((member) => member.name).join(", ")}</Text>}
+      </View>
+      {isManager && (
+        <View style={{ borderRadius: 28, borderWidth: 1, borderColor: colors.line, padding: 16, marginBottom: 16 }}>
+          <Text style={{ fontWeight: "700" }}>মেস সেটিংস</Text>
+          <Text style={{ marginTop: 16, color: colors.inkSoft }}>মেসের নাম</Text>
+          <TextInput value={name} onChangeText={(value) => setName(value.slice(0, 60))} style={{ marginTop: 8, height: 48, borderRadius: 16, backgroundColor: colors.field, paddingHorizontal: 16, color: colors.ink }} />
+          <Text style={{ marginTop: 16, marginBottom: 12, color: colors.inkSoft }}>যে বেলাগুলোতে রান্না হয়</Text>
+          <SlotPicker value={slots} onChange={setSlots} />
+          <Pressable onPress={save} disabled={!dirty || busy === "save"} style={{ marginTop: 16, height: 44, borderRadius: 16, backgroundColor: colors.purple, alignSelf: "flex-start", paddingHorizontal: 20, alignItems: "center", justifyContent: "center", opacity: !dirty ? 0.5 : 1 }}>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>{busy === "save" ? "সেভ হচ্ছে…" : "সেভ করুন"}</Text>
+          </Pressable>
+        </View>
       )}
-      <Group title="মেস ছাড়ুন">
-        <Row
-          title={isManager ? "ম্যানেজার মেস ছাড়তে পারেন না" : "মেস ছাড়ুন"}
-          subtitle={isManager ? "আগে অন্য কাউকে ম্যানেজার বানান।" : "আগের হিসাব রিপোর্টে থেকে যাবে।"}
-          danger={!isManager}
-          onPress={isManager ? undefined : leave}
-          last
-        />
-      </Group>
+      <View style={{ borderRadius: 28, backgroundColor: "#FFF7F5", padding: 16 }}>
+        <Text style={{ fontWeight: "700" }}>মেস ছাড়ুন</Text>
+        <Text style={{ marginTop: 4, color: colors.muted, lineHeight: 22 }}>
+          {isManager
+            ? active.length > 1
+              ? "ম্যানেজার মেস ছাড়তে পারেন না। আগে অন্য কাউকে ম্যানেজার বানান।"
+              : "আপনি একাই আছেন। মেস ছাড়তে হলে আগে আরেকজনকে যুক্ত করে ম্যানেজার বানান।"
+            : "ছেড়ে দিলে নতুন কিছু লিখতে পারবেন না, তবে আগের হিসাব রিপোর্টে থেকে যাবে।"}
+        </Text>
+        {!isManager && (
+          <Pressable onPress={leave} disabled={busy === "leave"} style={{ marginTop: 16, height: 44, borderRadius: 16, backgroundColor: colors.dark, alignSelf: "flex-start", paddingHorizontal: 20, alignItems: "center", justifyContent: "center" }}>
+            <Text style={{ color: "#fff", fontWeight: "700" }}>মেস ছাড়ুন</Text>
+          </Pressable>
+        )}
+      </View>
     </Screen>
   );
+}
+
+function inviteBtn(backgroundColor: string) {
+  return { height: 44, borderRadius: 16, backgroundColor, paddingHorizontal: 16, alignItems: "center" as const, justifyContent: "center" as const };
 }

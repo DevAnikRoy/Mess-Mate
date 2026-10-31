@@ -33,14 +33,16 @@ export function Screen({
   padded = true,
   onRefresh,
   refreshing = false,
+  canvas = colors.paper,
 }: {
   children: ReactNode;
   padded?: boolean;
   onRefresh?: () => void;
   refreshing?: boolean;
+  canvas?: string;
 }) {
   return (
-    <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+    <KeyboardAvoidingView style={[styles.page, { backgroundColor: canvas }]} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
@@ -207,7 +209,11 @@ export function SwitchRow({
 }
 
 export function Card({ children, tint, style }: { children: ReactNode; tint?: string; style?: StyleProp<ViewStyle> }) {
-  return <View style={[styles.card, tint ? { backgroundColor: tint } : null, style]}>{children}</View>;
+  return <View style={[styles.card, tint ? { backgroundColor: tint, borderWidth: 0 } : null, style]}>{children}</View>;
+}
+
+export function Panel({ children, style }: { children: ReactNode; style?: StyleProp<ViewStyle> }) {
+  return <View style={[styles.panel, style]}>{children}</View>;
 }
 
 export function Field(props: {
@@ -319,19 +325,16 @@ export function Title({ kicker, children }: { kicker?: string; children: ReactNo
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: colors.bg },
+  page: { flex: 1, backgroundColor: colors.paper },
   screenBody: { paddingBottom: 40 },
   padded: { padding: 16 },
   groupTitle: { color: colors.muted, fontSize: 12, fontWeight: "700", marginBottom: 8, marginLeft: 4 },
   group: {
     backgroundColor: colors.paper,
-    borderRadius: 16,
+    borderRadius: 24,
     overflow: "hidden",
-    elevation: 1,
-    shadowColor: "#1B1730",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   row: { flexDirection: "row", alignItems: "center", gap: 12, paddingHorizontal: 16, paddingVertical: 14, backgroundColor: colors.paper },
   rowLine: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line },
@@ -343,24 +346,32 @@ const styles = StyleSheet.create({
   money: { fontSize: 32, fontWeight: "800", letterSpacing: -0.5 },
   card: {
     backgroundColor: colors.paper,
-    borderRadius: 16,
+    borderRadius: 24,
     padding: 16,
     marginBottom: 12,
-    elevation: 1,
+    borderWidth: 1,
+    borderColor: colors.line,
+  },
+  panel: {
+    backgroundColor: colors.paper,
+    borderRadius: 24,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.line,
   },
   field: {
-    minHeight: 52,
-    borderRadius: 14,
-    backgroundColor: colors.paper,
+    minHeight: 48,
+    borderRadius: 16,
+    backgroundColor: colors.field,
     paddingHorizontal: 16,
     color: colors.ink,
     fontSize: 16,
-    elevation: 1,
   },
   area: { minHeight: 140, paddingTop: 14, textAlignVertical: "top" },
-  btn: { minHeight: 52, borderRadius: 14, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
+  btn: { minHeight: 48, borderRadius: 16, alignItems: "center", justifyContent: "center", paddingHorizontal: 16 },
   btnText: { fontWeight: "700", fontSize: 16 },
-  chip: { backgroundColor: colors.paper, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, elevation: 1 },
+  chip: { backgroundColor: colors.field, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 8 },
   chipOn: { backgroundColor: colors.purple },
   chipText: { color: colors.ink, fontSize: 13, fontWeight: "600" },
   chipTextOn: { color: "#fff" },

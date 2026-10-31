@@ -6,7 +6,7 @@ import { useMaybeMess } from "../lib/store";
 import { createClient } from "../lib/supabase";
 import { useReload } from "../providers";
 import { colors } from "../theme";
-import { Avatar, Button, ErrorText, Field, Group, Row, Screen } from "../ui";
+import { Avatar, Button, ErrorText, Field, Screen } from "../ui";
 
 export function AccountScreen() {
   const session = useSession();
@@ -53,26 +53,31 @@ export function AccountScreen() {
 
   return (
     <Screen>
-      <View style={{ alignItems: "center", paddingVertical: 12 }}>
+      <View style={{ borderRadius: 28, backgroundColor: colors.paper, padding: 8 }}>
         <Avatar name={session.name} src={session.avatarUrl} size={96} />
-        <Text style={{ fontSize: 24, fontWeight: "800", marginTop: 12 }}>{session.name}</Text>
-        <Text style={{ color: colors.muted }}>{session.email}</Text>
-      </View>
-      <Group>
-        <Row title="লগইন" trailing={<Text style={{ color: colors.purple, fontWeight: "700" }}>{session.provider === "google" ? "গুগল" : "ইমেইল"}</Text>} last />
-      </Group>
-      <Group title="মেসে যে নামে দেখাবে">
-        <View style={{ padding: 16, gap: 10 }}>
+        <Text style={{ fontSize: 24, fontWeight: "600", marginTop: 16 }}>{session.name}</Text>
+        <Text style={{ color: colors.muted, marginTop: 4 }}>{session.email}</Text>
+        <View style={{ alignSelf: "flex-start", marginTop: 12, backgroundColor: colors.soft, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 4 }}>
+          <Text style={{ color: colors.purple, fontWeight: "700", fontSize: 12 }}>{session.provider === "google" ? "গুগল" : "ইমেইল"}</Text>
+        </View>
+        <Text style={{ marginTop: 24, color: colors.inkSoft }}>মেসে যে নামে দেখাবে</Text>
+        <View style={{ marginTop: 8 }}>
           <Field value={name} onChangeText={setName} maxLength={60} autoCapitalize="words" />
-          <ErrorText>{error}</ErrorText>
-          {saved ? <Text style={{ color: colors.good }}>{saved}</Text> : null}
+        </View>
+        <ErrorText>{error}</ErrorText>
+        {saved ? <Text style={{ color: colors.good, marginTop: 8 }}>{saved}</Text> : null}
+        <View style={{ marginTop: 16, alignSelf: "flex-start" }}>
           <Button label="নাম সেভ" disabled={!name.trim() || name.trim() === session.name} busy={busy} onPress={rename} />
         </View>
-      </Group>
-      <Group>
-        {!store && <Row title="মেস খুলুন বা যোগ দিন" onPress={() => router.push("/onboarding")} />}
-        <Row title="বের হন" danger onPress={leave} last />
-      </Group>
+        {!store && (
+          <Text onPress={() => router.push("/onboarding")} style={{ marginTop: 20, color: colors.purple, fontWeight: "700" }}>
+            মেস খুলুন বা যোগ দিন
+          </Text>
+        )}
+        <View style={{ marginTop: 12, alignSelf: "flex-start" }}>
+          <Button label="বের হন" kind="dark" busy={busy} onPress={leave} />
+        </View>
+      </View>
     </Screen>
   );
 }

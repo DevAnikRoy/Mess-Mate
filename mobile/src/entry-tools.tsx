@@ -40,14 +40,14 @@ export function WhoWhen({
   return (
     <View style={{ marginTop: 12, gap: 8 }}>
       <Text style={{ color: colors.muted, fontSize: 12, fontWeight: "700" }}>কে দিয়েছে</Text>
-      <View style={{ backgroundColor: colors.paper, borderRadius: 14, overflow: "hidden", elevation: 1 }}>
+      <View style={{ backgroundColor: colors.field, borderRadius: 16, overflow: "hidden" }}>
         <Picker selectedValue={memberId} onValueChange={(value) => onMember(String(value))}>
           {activeMembers.map((member) => (
             <Picker.Item key={member.id} label={member.name} value={member.id} />
           ))}
         </Picker>
       </View>
-      <Pressable onPress={() => setOpen(true)} style={{ backgroundColor: colors.paper, borderRadius: 14, padding: 14, elevation: 1 }}>
+      <Pressable onPress={() => setOpen(true)} style={{ backgroundColor: colors.field, borderRadius: 16, padding: 14 }}>
         <Text style={{ color: colors.muted, fontSize: 12 }}>তারিখ</Text>
         <Text style={{ color: colors.ink, fontSize: 16, marginTop: 4, fontWeight: "600" }}>{date}</Text>
       </Pressable>

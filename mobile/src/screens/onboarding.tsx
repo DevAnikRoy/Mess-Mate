@@ -27,12 +27,13 @@ export function SlotPicker({ value, onChange }: { value: MealMark; onChange: (ne
               flex: 1,
               borderRadius: 14,
               padding: 12,
-              backgroundColor: active ? colors.purple : colors.paper,
-              elevation: active ? 0 : 1,
+              backgroundColor: active ? colors.soft : colors.paper,
+              borderWidth: 1,
+              borderColor: active ? colors.purple : "#EEE8F8",
             }}
           >
-            <Text style={{ fontWeight: "700", color: active ? "#fff" : colors.ink }}>{slot.label}</Text>
-            <Text style={{ color: active ? "rgba(255,255,255,0.8)" : colors.muted, fontSize: 12 }}>{slot.weight} মিল</Text>
+            <Text style={{ fontWeight: "700", color: active ? colors.purple : colors.inkSoft }}>{slot.label}</Text>
+            <Text style={{ color: colors.muted, fontSize: 12 }}>{slot.weight} মিল</Text>
           </Pressable>
         );
       })}
@@ -139,42 +140,53 @@ export function OnboardingScreen() {
   }
 
   return (
-    <Screen>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8, marginTop: 8 }}>
-        <Text style={{ fontSize: 13, fontWeight: "700", color: colors.purple }}>মেসমেট</Text>
+    <Screen canvas={colors.bg}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+        <Text style={{ fontSize: 26, fontWeight: "700" }}>মেসমেট</Text>
         <Pressable onPress={() => router.push("/account")}>
-          <Avatar name={session?.name ?? "স"} src={session?.avatarUrl ?? null} />
+          <Avatar name={session?.name ?? "স"} src={session?.avatarUrl ?? null} size={40} />
         </Pressable>
       </View>
-      <Text style={{ color: colors.muted }}>স্বাগতম{session ? `, ${greetingName(session.name)}` : ""}</Text>
-      <Text style={{ fontSize: 28, fontWeight: "800", marginTop: 4, marginBottom: 20 }}>আপনার মেস শুরু করুন</Text>
-      <View style={{ flexDirection: "row", backgroundColor: colors.paper, borderRadius: 14, padding: 4, marginBottom: 16, elevation: 1 }}>
-        <Pressable
-          onPress={() => setMode("create")}
-          android_ripple={ripple}
-          style={{ flex: 1, padding: 10, borderRadius: 12, backgroundColor: mode === "create" ? colors.soft : "transparent" }}
-        >
-          <Text style={{ textAlign: "center", color: mode === "create" ? colors.purple : colors.muted, fontWeight: "700" }}>নতুন মেস</Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setMode("join")}
-          android_ripple={ripple}
-          style={{ flex: 1, padding: 10, borderRadius: 12, backgroundColor: mode === "join" ? colors.soft : "transparent" }}
-        >
-          <Text style={{ textAlign: "center", color: mode === "join" ? colors.purple : colors.muted, fontWeight: "700" }}>কোড দিয়ে যোগ</Text>
-        </Pressable>
-      </View>
-      {mode === "create" ? (
-        <View style={{ gap: 12 }}>
-          <Field value={name} onChangeText={(value) => setName(value.slice(0, 60))} placeholder="যেমন: শান্তিনগর বয়েজ মেস" autoCapitalize="words" />
-          <Text style={{ fontWeight: "600" }}>কোন কোন বেলা রান্না হয়?</Text>
-          <SlotPicker value={slots} onChange={setSlots} />
-          <ErrorText>{error}</ErrorText>
-          <Button label="মেস খুলুন" onPress={create} busy={busy} />
+      <View style={{ marginTop: 24, borderRadius: 32, backgroundColor: colors.paper, overflow: "hidden" }}>
+        <View style={{ backgroundColor: colors.purple, paddingHorizontal: 24, paddingTop: 24, paddingBottom: 28 }}>
+          <Text style={{ color: "rgba(255,255,255,0.8)" }}>স্বাগতম{session ? `, ${greetingName(session.name)}` : ""}</Text>
+          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "700", marginTop: 4 }}>আপনার মেসের হিসাব শুরু করুন</Text>
+          <Text style={{ color: "rgba(255,255,255,0.8)", marginTop: 8, lineHeight: 22 }}>নিজে মেস খুলে ম্যানেজার হন, অথবা ম্যানেজারের দেওয়া কোড দিয়ে যোগ দিন।</Text>
         </View>
-      ) : (
-        <JoinBox />
-      )}
+        <View style={{ paddingHorizontal: 24, paddingBottom: 28, paddingTop: 20 }}>
+          <View style={{ flexDirection: "row", backgroundColor: colors.field, borderRadius: 999, padding: 4 }}>
+            <Pressable onPress={() => setMode("create")} style={{ flex: 1, borderRadius: 999, paddingVertical: 10, backgroundColor: mode === "create" ? colors.paper : "transparent" }}>
+              <Text style={{ textAlign: "center", color: mode === "create" ? colors.purple : colors.muted, fontWeight: mode === "create" ? "700" : "400" }}>নতুন মেস খুলুন</Text>
+            </Pressable>
+            <Pressable onPress={() => setMode("join")} style={{ flex: 1, borderRadius: 999, paddingVertical: 10, backgroundColor: mode === "join" ? colors.paper : "transparent" }}>
+              <Text style={{ textAlign: "center", color: mode === "join" ? colors.purple : colors.muted, fontWeight: mode === "join" ? "700" : "400" }}>কোড দিয়ে যোগ দিন</Text>
+            </Pressable>
+          </View>
+          {mode === "create" ? (
+            <View style={{ gap: 16, marginTop: 24 }}>
+              <View>
+                <Text style={{ fontWeight: "600", marginBottom: 8 }}>মেসের নাম</Text>
+                <Field value={name} onChangeText={(value) => setName(value.slice(0, 60))} placeholder="যেমন: শান্তিনগর বয়েজ মেস" autoCapitalize="words" />
+              </View>
+              <View>
+                <Text style={{ fontWeight: "600" }}>কোন কোন বেলা রান্না হয়?</Text>
+                <Text style={{ color: colors.muted, fontSize: 12, marginTop: 4, marginBottom: 12 }}>পরে মেস সেটিংস থেকে বদলানো যাবে।</Text>
+                <SlotPicker value={slots} onChange={setSlots} />
+              </View>
+              <Text style={{ backgroundColor: colors.wash, borderRadius: 16, padding: 12, color: colors.inkSoft, fontSize: 12, lineHeight: 18 }}>
+                আপনি হবেন এই মেসের ম্যানেজার। মেস খোলার পর একটা ইনভাইট কোড পাবেন, সেটা সদস্যদের পাঠালেই তারা যুক্ত হতে পারবে।
+              </Text>
+              <ErrorText>{error}</ErrorText>
+              <Button label={busy ? "মেস খোলা হচ্ছে…" : "মেস খুলুন"} onPress={create} busy={busy} />
+            </View>
+          ) : (
+            <View style={{ marginTop: 24 }}>
+              <Text style={{ color: colors.inkSoft, marginBottom: 12 }}>ম্যানেজারের কাছ থেকে পাওয়া ৮ অক্ষরের কোড বা লিংক বসান।</Text>
+              <JoinBox />
+            </View>
+          )}
+        </View>
+      </View>
     </Screen>
   );
 }

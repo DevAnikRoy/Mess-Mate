@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { EntryActions, WhoWhen, useCanChange } from "../entry-tools";
 import { dateLabel, monthName } from "../lib/dates";
 import { parseAmount, taka } from "../lib/format";
@@ -7,13 +7,12 @@ import { monthMembers, suggestTotal } from "../lib/model";
 import { useMess } from "../lib/store";
 import { MonthLoading, MonthPicker } from "../month-picker";
 import { colors } from "../theme";
-import { Button, Empty, FAB, Field, Group, Page, Row, Screen, Sheet, usePullReload } from "../ui";
+import { Screen, Title, usePullReload } from "../ui";
 
 export function BazaarScreen() {
   const { state, me, today, month, members, monthReady, memberById, addBazaar, updateAmount, removeEntry, say } = useMess();
   const canChange = useCanChange();
   const { refreshing, onRefresh } = usePullReload();
-  const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [guess, setGuess] = useState<number | null>(null);
   const [amount, setAmount] = useState("");
@@ -31,14 +30,6 @@ export function BazaarScreen() {
     else say("লেখায় কোনো অঙ্ক পাওয়া যায়নি। নিচে নিজে মোট লিখুন।");
   }
 
-  function resetForm() {
-    setNote("");
-    setAmount("");
-    setGuess(null);
-    setMemberId(me.id);
-    setDate(today);
-  }
-
   async function save() {
     const value = parseAmount(amount);
     if (value == null) return say("নিশ্চিত মোট টাকা লিখুন।");
@@ -47,78 +38,91 @@ export function BazaarScreen() {
     const ok = await addBazaar({ memberId, date, note: note.trim().slice(0, 2000), amount: value });
     setBusy(false);
     if (!ok) return;
-    resetForm();
-    setOpen(false);
+    setNote("");
+    setAmount("");
+    setGuess(null);
+    setMemberId(me.id);
+    setDate(today);
     say("বাজার সেভ হয়েছে।");
   }
 
   return (
-    <Page>
-      <Screen onRefresh={onRefresh} refreshing={refreshing}>
-        <MonthPicker />
-        <View style={{ backgroundColor: colors.dark, borderRadius: 16, padding: 18, marginTop: 12 }}>
-          <Text style={{ color: "rgba(255,255,255,0.7)" }}>{monthName(month)} মাসের বাজার</Text>
-          <Text style={{ color: "#fff", fontSize: 32, fontWeight: "800", marginTop: 4 }}>{taka(total)}</Text>
+    <Screen onRefresh={onRefresh} refreshing={refreshing}>
+      <Title kicker="খাতার মতো লিখুন">বাজার</Title>
+      <TextInput
+        value={note}
+        onChangeText={setNote}
+        multiline
+        maxLength={2000}
+        placeholder={"যেমন:\nচাল ৫ কেজি ৩৫০\nসবজি ১৮০\nমাছ ৪২০"}
+        placeholderTextColor={colors.muted}
+        style={{ minHeight: 180, borderRadius: 24, backgroundColor: "#F7F5FC", padding: 16, color: colors.ink, fontSize: 14, lineHeight: 22, textAlignVertical: "top" }}
+      />
+      <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+        <Pressable onPress={preview} disabled={!note.trim()} style={{ borderRadius: 999, backgroundColor: colors.soft, paddingHorizontal: 16, paddingVertical: 8, opacity: note.trim() ? 1 : 0.5 }}>
+          <Text style={{ color: colors.purple, fontWeight: "700" }}>অঙ্ক বের করো</Text>
+        </Pressable>
+        {guess != null && <Text style={{ color: colors.muted, fontSize: 14 }}>লেখা থেকে {taka(guess)} পাওয়া গেছে</Text>}
+      </View>
+      <Text style={{ marginTop: 16, marginBottom: 6, fontSize: 14 }}>নিশ্চিত মোট</Text>
+      <TextInput
+        value={amount}
+        onChangeText={setAmount}
+        keyboardType="decimal-pad"
+        placeholder="৳"
+        placeholderTextColor={colors.muted}
+        style={{ height: 48, borderRadius: 16, backgroundColor: "#F7F5FC", paddingHorizontal: 16, fontSize: 18, fontWeight: "700", color: colors.ink }}
+      />
+      <WhoWhen memberId={memberId} date={date} onMember={setMemberId} onDate={setDate} />
+      <Pressable onPress={save} disabled={busy} style={{ marginTop: 12, height: 48, borderRadius: 16, backgroundColor: colors.purple, alignItems: "center", justifyContent: "center", opacity: busy ? 0.6 : 1 }}>
+        <Text style={{ color: "#fff", fontWeight: "700" }}>{busy ? "সেভ হচ্ছে…" : "বাজার সেভ"}</Text>
+      </Pressable>
+      <Text style={{ marginTop: 8, color: colors.muted, fontSize: 12, lineHeight: 18 }}>
+        হিসাবে শুধু এই নিশ্চিত টাকা ঢুকবে। আসল লেখা রয়ে যাবে। আজকের মধ্যে নিজে বদলাতে পারবেন, পরে ম্যানেজার।
+      </Text>
+
+      <View style={{ marginTop: 20, borderRadius: 24, borderWidth: 1, borderColor: colors.line, padding: 16 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8, marginBottom: 12 }}>
+          <Text style={{ fontWeight: "700", flex: 1 }}>{monthName(month)} মাসের বাজার</Text>
+          <MonthPicker />
         </View>
         {!monthReady(month) ? (
           <MonthLoading />
         ) : (
           <>
-            <View style={{ marginTop: 16 }}>
-              <Group title="কে কত কিনেছে">
-                {people.map((member, index) => {
-                  const sum = rows.filter((row) => row.memberId === member.id).reduce((value, row) => value + row.amount, 0);
-                  return (
-                    <Row
-                      key={member.id}
-                      title={member.id === me.id ? "আমি" : member.name}
-                      trailing={<Text style={{ fontWeight: "800" }}>{taka(sum)}</Text>}
-                      last={index === people.length - 1}
-                    />
-                  );
-                })}
-              </Group>
+            <View style={{ backgroundColor: colors.dark, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
+              <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>মোট বাজার</Text>
+              <Text style={{ color: "#fff", fontSize: 24, fontWeight: "700" }}>{taka(total)}</Text>
             </View>
-            <Group title="বাজারের খাতা">
-              {rows.length ? (
-                rows.map((row, index) => (
-                  <View key={row.id} style={{ borderBottomWidth: index === rows.length - 1 ? 0 : 1, borderBottomColor: colors.line, padding: 16 }}>
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontWeight: "700", fontSize: 16 }}>{row.note.split("\n")[0] || "বাজার"}</Text>
-                        <Text style={{ color: colors.muted, marginTop: 2, fontSize: 12 }}>
-                          {memberById(row.memberId)?.short ?? "সদস্য"} · {dateLabel(row.date)}
-                        </Text>
-                        {row.note.includes("\n") ? <Text style={{ marginTop: 6, color: colors.ink }}>{row.note}</Text> : null}
-                      </View>
-                      <Text style={{ fontWeight: "800" }}>{taka(row.amount)}</Text>
-                    </View>
-                    {canChange(row) && (
-                      <EntryActions amount={row.amount} onSave={(value) => updateAmount("bazaar", row.id, value)} onDelete={() => removeEntry("bazaar", row.id)} />
-                    )}
+            {people.map((member) => {
+              const sum = rows.filter((row) => row.memberId === member.id).reduce((value, row) => value + row.amount, 0);
+              return (
+                <View key={member.id} style={{ flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: colors.line }}>
+                  <Text>{member.id === me.id ? "আমি" : member.name}</Text>
+                  <Text style={{ fontWeight: "700" }}>{taka(sum)}</Text>
+                </View>
+              );
+            })}
+            <View style={{ marginTop: 12, gap: 12 }}>
+              {rows.map((row) => (
+                <View key={row.id} style={{ borderRadius: 16, padding: 12, backgroundColor: row.memberId === me.id ? "#F4EFFF" : "#FAF8FF" }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+                    <Text style={{ color: colors.muted, flex: 1 }} numberOfLines={1}>
+                      {memberById(row.memberId)?.short ?? "সদস্য"} · {dateLabel(row.date)}
+                    </Text>
+                    <Text style={{ fontWeight: "700" }}>{taka(row.amount)}</Text>
                   </View>
-                ))
-              ) : (
-                <Empty text="এই মাসে এখনো কোনো বাজার লেখা হয়নি। নিচের + চাপুন।" />
-              )}
-            </Group>
+                  <Text style={{ marginTop: 4, lineHeight: 20 }}>{row.note}</Text>
+                  {canChange(row) && (
+                    <EntryActions amount={row.amount} onSave={(value) => updateAmount("bazaar", row.id, value)} onDelete={() => removeEntry("bazaar", row.id)} />
+                  )}
+                </View>
+              ))}
+              {!rows.length && <Text style={{ textAlign: "center", color: colors.muted, paddingVertical: 24 }}>এই মাসে এখনো কোনো বাজার লেখা হয়নি।</Text>}
+            </View>
           </>
         )}
-      </Screen>
-      <FAB onPress={() => setOpen(true)} />
-      <Sheet visible={open} title="নতুন বাজার" onClose={() => setOpen(false)}>
-        <Field value={note} onChangeText={setNote} placeholder={"যেমন:\nচাল ৫ কেজি ৩৫০\nসবজি ১৮০"} multiline maxLength={2000} autoCapitalize="sentences" />
-        <View style={{ marginTop: 10 }}>
-          <Button label="অঙ্ক বের করো" kind="ghost" disabled={!note.trim()} onPress={preview} />
-        </View>
-        {guess != null && <Text style={{ color: colors.muted, marginTop: 8 }}>লেখা থেকে {taka(guess)} পাওয়া গেছে</Text>}
-        <Text style={{ marginTop: 14, marginBottom: 8, fontWeight: "600" }}>নিশ্চিত মোট</Text>
-        <Field value={amount} onChangeText={setAmount} placeholder="৳" keyboardType="decimal-pad" />
-        <WhoWhen memberId={memberId} date={date} onMember={setMemberId} onDate={setDate} />
-        <View style={{ marginTop: 16 }}>
-          <Button label="বাজার সেভ" onPress={save} busy={busy} />
-        </View>
-      </Sheet>
-    </Page>
+      </View>
+    </Screen>
   );
 }

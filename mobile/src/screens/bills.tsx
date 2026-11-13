@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import { EntryActions, WhoWhen, useCanChange } from "../entry-tools";
 import { dateLabel, monthName } from "../lib/dates";
 import { parseAmount, taka } from "../lib/format";
 import { useMess } from "../lib/store";
 import { MonthLoading, MonthPicker } from "../month-picker";
 import { colors } from "../theme";
-import { Button, Chip, Empty, FAB, Field, Group, Page, Screen, Sheet, usePullReload } from "../ui";
+import { Screen, Title, usePullReload } from "../ui";
 
 const QUICK = ["বাসা ভাড়া", "বিদ্যুৎ বিল", "গ্যাস", "ওয়াইফাই", "বুয়া", "পানি", "হার্পিক/সাবান"];
 
@@ -14,7 +14,6 @@ export function BillsScreen() {
   const { state, me, today, month, ledger, monthReady, memberById, addBill, updateAmount, removeEntry, say } = useMess();
   const canChange = useCanChange();
   const { refreshing, onRefresh } = usePullReload();
-  const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [memberId, setMemberId] = useState(me.id);
@@ -34,74 +33,84 @@ export function BillsScreen() {
     setAmount("");
     setMemberId(me.id);
     setDate(today);
-    setOpen(false);
     say("খরচ যোগ হয়েছে।");
   }
 
   return (
-    <Page>
-      <Screen onRefresh={onRefresh} refreshing={refreshing}>
-        <MonthPicker />
-        <Text style={{ color: colors.muted, marginTop: 10, lineHeight: 20 }}>
-          এই টাকা বাজারের মিল রেটে মেশে না। মাসের সব সদস্যে সমান ভাগ হয়।
-        </Text>
+    <Screen onRefresh={onRefresh} refreshing={refreshing}>
+      <Title kicker="ভাড়া, কারেন্ট, ওয়াইফাই, হার্পিক">ঘরের খরচ</Title>
+      <Text style={{ color: colors.inkSoft, lineHeight: 22, marginBottom: 12 }}>
+        এই টাকা বাজারের মিল রেটে মেশে না। মাসের সব সদস্যে সমান ভাগ হয়। যে দিয়েছে, তার দেওয়া টাকা থেকে বাদ যায়।
+      </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 4 }}>
+        {QUICK.map((item) => (
+          <Pressable key={item} onPress={() => setTitle(item)} style={{ backgroundColor: colors.field, borderRadius: 999, paddingHorizontal: 12, paddingVertical: 6 }}>
+            <Text style={{ fontSize: 12 }}>{item}</Text>
+          </Pressable>
+        ))}
+      </ScrollView>
+      <TextInput value={title} onChangeText={setTitle} maxLength={120} placeholder="কিসের খরচ" placeholderTextColor={colors.muted} style={field} />
+      <TextInput value={amount} onChangeText={setAmount} keyboardType="decimal-pad" placeholder="টাকা" placeholderTextColor={colors.muted} style={field} />
+      <WhoWhen memberId={memberId} date={date} onMember={setMemberId} onDate={setDate} />
+      <Pressable onPress={save} disabled={busy} style={{ marginTop: 12, height: 48, borderRadius: 16, backgroundColor: colors.dark, alignItems: "center", justifyContent: "center", opacity: busy ? 0.6 : 1 }}>
+        <Text style={{ color: "#fff", fontWeight: "700" }}>{busy ? "সেভ হচ্ছে…" : "খরচ যোগ করুন"}</Text>
+      </Pressable>
+
+      <View style={{ marginTop: 20, borderRadius: 24, borderWidth: 1, borderColor: colors.line, padding: 16 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <Text style={{ fontWeight: "700" }}>{monthName(month)}</Text>
+          <MonthPicker />
+        </View>
         {!monthReady(month) ? (
           <MonthLoading />
         ) : (
           <>
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 12 }}>
-              <View style={{ flex: 1, backgroundColor: colors.dark, borderRadius: 16, padding: 14 }}>
-                <Text style={{ color: "rgba(255,255,255,0.7)" }}>{monthName(month)}</Text>
-                <Text style={{ color: "#fff", fontSize: 22, fontWeight: "800", marginTop: 4 }}>{taka(ledger.totalBills)}</Text>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <View style={{ flex: 1, backgroundColor: colors.dark, borderRadius: 16, padding: 12 }}>
+                <Text style={{ color: "rgba(255,255,255,0.7)", fontSize: 12 }}>মোট খরচ</Text>
+                <Text style={{ color: "#fff", fontSize: 18, fontWeight: "700" }}>{taka(ledger.totalBills)}</Text>
               </View>
-              <View style={{ flex: 1, backgroundColor: colors.paper, borderRadius: 16, padding: 14, elevation: 1 }}>
-                <Text style={{ color: colors.muted }}>জনপ্রতি ({ledger.rows.length})</Text>
-                <Text style={{ color: colors.purple, fontSize: 22, fontWeight: "800", marginTop: 4 }}>{taka(ledger.share)}</Text>
+              <View style={{ flex: 1, backgroundColor: colors.soft, borderRadius: 16, padding: 12 }}>
+                <Text style={{ color: colors.muted, fontSize: 12 }} numberOfLines={1}>
+                  জনপ্রতি ({ledger.rows.length} জন)
+                </Text>
+                <Text style={{ color: colors.purple, fontSize: 18, fontWeight: "700" }}>{taka(ledger.share)}</Text>
               </View>
             </View>
-            <View style={{ marginTop: 16 }}>
-              <Group title="খরচের তালিকা">
-                {rows.length ? (
-                  rows.map((bill, index) => (
-                    <View key={bill.id} style={{ padding: 16, borderBottomWidth: index === rows.length - 1 ? 0 : 1, borderBottomColor: colors.line }}>
-                      <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 12 }}>
-                        <View style={{ flex: 1 }}>
-                          <Text style={{ fontWeight: "700", fontSize: 16 }}>{bill.title}</Text>
-                          <Text style={{ color: colors.muted, fontSize: 12, marginTop: 2 }}>
-                            {bill.memberId === me.id ? "আমি" : memberById(bill.memberId)?.short ?? "সদস্য"} · {dateLabel(bill.date)}
-                          </Text>
-                        </View>
-                        <Text style={{ fontWeight: "800" }}>{taka(bill.amount)}</Text>
-                      </View>
-                      {canChange(bill) && (
-                        <EntryActions amount={bill.amount} onSave={(value) => updateAmount("bill", bill.id, value)} onDelete={() => removeEntry("bill", bill.id)} />
-                      )}
+            <View style={{ marginTop: 12, gap: 8 }}>
+              {rows.map((bill) => (
+                <View key={bill.id} style={{ backgroundColor: "#FAF8FF", borderRadius: 16, padding: 12 }}>
+                  <View style={{ flexDirection: "row", justifyContent: "space-between", gap: 8 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontWeight: "700" }} numberOfLines={1}>
+                        {bill.title}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: colors.muted }}>
+                        {bill.memberId === me.id ? "আমি" : memberById(bill.memberId)?.short ?? "সদস্য"} দিয়েছেন · {dateLabel(bill.date)}
+                      </Text>
                     </View>
-                  ))
-                ) : (
-                  <Empty text="এই মাসে এখনো কোনো খরচ যোগ হয়নি। নিচের + চাপুন।" />
-                )}
-              </Group>
+                    <Text style={{ fontWeight: "700" }}>{taka(bill.amount)}</Text>
+                  </View>
+                  {canChange(bill) && (
+                    <EntryActions amount={bill.amount} onSave={(value) => updateAmount("bill", bill.id, value)} onDelete={() => removeEntry("bill", bill.id)} />
+                  )}
+                </View>
+              ))}
+              {!rows.length && <Text style={{ textAlign: "center", color: colors.muted, paddingVertical: 24 }}>এই মাসে এখনো কোনো খরচ যোগ হয়নি।</Text>}
             </View>
           </>
         )}
-      </Screen>
-      <FAB onPress={() => setOpen(true)} />
-      <Sheet visible={open} title="ঘরের খরচ যোগ" onClose={() => setOpen(false)}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, marginBottom: 12 }}>
-          {QUICK.map((item) => (
-            <Chip key={item} label={item} active={title === item} onPress={() => setTitle(item)} />
-          ))}
-        </ScrollView>
-        <View style={{ gap: 10 }}>
-          <Field value={title} onChangeText={setTitle} placeholder="কিসের খরচ" maxLength={120} autoCapitalize="sentences" />
-          <Field value={amount} onChangeText={setAmount} placeholder="টাকা" keyboardType="decimal-pad" />
-        </View>
-        <WhoWhen memberId={memberId} date={date} onMember={setMemberId} onDate={setDate} />
-        <View style={{ marginTop: 16 }}>
-          <Button label="খরচ যোগ করুন" kind="dark" onPress={save} busy={busy} />
-        </View>
-      </Sheet>
-    </Page>
+      </View>
+    </Screen>
   );
 }
+
+const field = {
+  height: 48,
+  borderRadius: 16,
+  backgroundColor: "#F7F5FC",
+  paddingHorizontal: 16,
+  marginTop: 8,
+  color: colors.ink,
+  fontSize: 16,
+};

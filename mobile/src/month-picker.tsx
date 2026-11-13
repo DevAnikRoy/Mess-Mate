@@ -2,7 +2,6 @@ import { Pressable, ScrollView, Text, View } from "react-native";
 import { bnDigits, monthName, monthOf } from "./lib/dates";
 import { useMess } from "./lib/store";
 import { colors } from "./theme";
-import { ripple } from "./ui";
 
 export function MonthPicker({ value, onChange }: { value?: string; onChange?: (month: string) => void }) {
   const { months, month, setMonth, today } = useMess();
@@ -11,23 +10,12 @@ export function MonthPicker({ value, onChange }: { value?: string; onChange?: (m
   const year = monthOf(today).slice(0, 4);
   if (months.length < 2) return null;
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, maxWidth: "100%" }} contentContainerStyle={{ backgroundColor: colors.field, borderRadius: 999, padding: 4 }}>
       {[...months].reverse().map((item) => {
         const on = current === item;
         return (
-          <Pressable
-            key={item}
-            onPress={() => pick(item)}
-            android_ripple={ripple}
-            style={{
-              backgroundColor: on ? colors.purple : colors.paper,
-              borderRadius: 999,
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              elevation: on ? 0 : 1,
-            }}
-          >
-            <Text style={{ color: on ? "#fff" : colors.ink, fontWeight: "700", fontSize: 13 }}>
+          <Pressable key={item} onPress={() => pick(item)} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8, backgroundColor: on ? colors.paper : "transparent" }}>
+            <Text style={{ color: on ? colors.ink : colors.muted, fontWeight: on ? "700" : "400", fontSize: 14 }}>
               {monthName(item)}
               {item.slice(0, 4) !== year ? ` ${bnDigits(item.slice(2, 4))}` : ""}
             </Text>
@@ -39,5 +27,10 @@ export function MonthPicker({ value, onChange }: { value?: string; onChange?: (m
 }
 
 export function MonthLoading() {
-  return <View style={{ height: 88, borderRadius: 16, backgroundColor: colors.paper, marginTop: 12 }} />;
+  return (
+    <View style={{ gap: 12 }}>
+      <View style={{ height: 112, borderRadius: 24, backgroundColor: colors.wash }} />
+      <View style={{ height: 220, borderRadius: 24, backgroundColor: colors.wash }} />
+    </View>
+  );
 }

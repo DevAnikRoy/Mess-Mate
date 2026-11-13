@@ -21,13 +21,9 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-          <Stack.Screen name="join/[code]" options={{ title: "মেসে যোগ দিন" }} />
-          <Stack.Screen name="bills" options={{ title: "ঘরের খরচ" }} />
-          <Stack.Screen name="duties" options={{ title: "ডিউটি" }} />
-          <Stack.Screen name="mess" options={{ title: "মেস ও সদস্য" }} />
-          <Stack.Screen name="account" options={{ title: "প্রোফাইল" }} />
-          <Stack.Screen name="members/[id]" options={{ title: "সদস্য" }} />
+          <Stack.Screen name="join/[code]" options={{ title: "মেসে যোগ দিন", headerStyle: { backgroundColor: colors.bg }, headerShadowVisible: false }} />
           <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
+          <Stack.Screen name="whatsapp" options={{ title: "মেসমেট", headerStyle: { backgroundColor: colors.paper }, headerShadowVisible: false }} />
         </Stack>
         <Toast />
       </AppProviders>

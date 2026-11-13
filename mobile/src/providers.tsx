@@ -9,6 +9,7 @@ import { SessionProvider } from "./lib/session";
 import { MessProvider } from "./lib/store";
 import { createClient } from "./lib/supabase";
 import { colors } from "./theme";
+import { whatsappBridge } from "./lib/whatsapp-bridge";
 
 const ReloadCtx = createContext<() => Promise<void>>(async () => {});
 export function useReload() {
@@ -32,7 +33,8 @@ export function AppProviders({ children }: { children: ReactNode }) {
     const stopLinks = listenForAuthLinks();
     void reload();
     if (!supabase) return () => stopLinks();
-    const { data } = supabase.auth.onAuthStateChange(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") void whatsappBridge?.disconnect().catch(() => {});
       void reload();
     });
     return () => {

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
 import * as WebBrowser from "expo-web-browser";
 import { signInWithGoogle, webRedirect } from "../lib/auth";
 import { createClient, supabaseConfigured } from "../lib/supabase";
 import { colors } from "../theme";
-import { Button, ErrorText, Field, Screen, ripple } from "../ui";
+import { Button, ErrorText, Field, Screen } from "../ui";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -79,46 +80,61 @@ export function LoginScreen() {
   }
 
   return (
-    <Screen>
-      <Text style={{ fontSize: 13, fontWeight: "700", color: colors.purple, marginTop: 36 }}>মেসমেট</Text>
-      <Text style={{ fontSize: 32, fontWeight: "800", color: colors.ink, marginTop: 8 }}>ঢুকুন</Text>
-      <Text style={{ color: colors.muted, marginTop: 6, marginBottom: 28, lineHeight: 22 }}>
-        গুগল খুললে সেখানে ঢুকুন। ব্রাউজার বন্ধ করলে অ্যাপেই লগইন থাকবে।
-      </Text>
-      {!supabaseConfigured() ? (
-        <Text style={{ color: colors.muted, lineHeight: 22 }}>
-          সুপাবেস এখনো যুক্ত হয়নি। .env.example দেখে mobile/.env এ প্রজেক্টের ঠিকানা আর anon কী বসান।
-        </Text>
-      ) : (
-        <>
-          <Button label="গুগল দিয়ে ঢুকুন" onPress={withGoogle} busy={busy} />
-          <Text style={{ textAlign: "center", color: colors.muted, marginVertical: 18 }}>অথবা ইমেইল</Text>
-          <View style={{ flexDirection: "row", backgroundColor: colors.paper, borderRadius: 14, padding: 4, marginBottom: 14, elevation: 1 }}>
-            <Pressable
-              onPress={() => setMode("in")}
-              android_ripple={ripple}
-              style={{ flex: 1, padding: 10, borderRadius: 12, backgroundColor: mode === "in" ? colors.soft : "transparent" }}
-            >
-              <Text style={{ textAlign: "center", fontWeight: "700", color: mode === "in" ? colors.purple : colors.muted }}>ঢুকুন</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setMode("up")}
-              android_ripple={ripple}
-              style={{ flex: 1, padding: 10, borderRadius: 12, backgroundColor: mode === "up" ? colors.soft : "transparent" }}
-            >
-              <Text style={{ textAlign: "center", fontWeight: "700", color: mode === "up" ? colors.purple : colors.muted }}>নতুন</Text>
-            </Pressable>
-          </View>
-          <View style={{ gap: 10 }}>
-            {mode === "up" && <Field value={name} onChangeText={setName} placeholder="আপনার নাম" autoCapitalize="words" />}
-            <Field value={email} onChangeText={setEmail} placeholder="ইমেইল" keyboardType="email-address" />
-            <Field value={password} onChangeText={setPassword} placeholder="পাসওয়ার্ড" secure />
-            <ErrorText>{error}</ErrorText>
-            {notice ? <Text style={{ color: colors.good }}>{notice}</Text> : null}
-            <Button label={mode === "up" ? "অ্যাকাউন্ট খুলুন" : "ঢুকুন"} kind="dark" onPress={withEmail} busy={busy} />
-          </View>
-        </>
-      )}
+    <Screen canvas={colors.bg}>
+      <View style={{ flex: 1, justifyContent: "center" }}>
+        <View style={{ backgroundColor: colors.paper, borderRadius: 32, paddingHorizontal: 24, paddingVertical: 32 }}>
+          <Text style={{ fontSize: 28, fontWeight: "700" }}>মেসমেট</Text>
+          <Text style={{ marginTop: 4, color: colors.muted }}>গুগল অথবা ইমেইল দিয়ে ঢুকুন</Text>
+          {!supabaseConfigured() ? (
+            <Text style={{ marginTop: 24, backgroundColor: colors.wash, borderRadius: 16, padding: 14, lineHeight: 22, color: colors.inkSoft }}>
+              সুপাবেস এখনো যুক্ত হয়নি। .env.example দেখে mobile/.env এ প্রজেক্টের ঠিকানা আর anon কী বসান।
+            </Text>
+          ) : (
+            <>
+              <Pressable
+                onPress={withGoogle}
+                disabled={busy}
+                style={{ marginTop: 24, height: 48, borderRadius: 16, borderWidth: 1, borderColor: "#E7E0F4", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, opacity: busy ? 0.6 : 1 }}
+              >
+                <GoogleMark />
+                <Text style={{ fontWeight: "700" }}>গুগল দিয়ে ঢুকুন</Text>
+              </Pressable>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginVertical: 20 }}>
+                <View style={{ flex: 1, height: 1, backgroundColor: "#EFEAF8" }} />
+                <Text style={{ color: colors.muted, fontSize: 12 }}>অথবা</Text>
+                <View style={{ flex: 1, height: 1, backgroundColor: "#EFEAF8" }} />
+              </View>
+              <View style={{ flexDirection: "row", backgroundColor: colors.field, borderRadius: 999, padding: 4 }}>
+                <Pressable onPress={() => { setMode("in"); setError(""); setNotice(""); }} style={{ flex: 1, borderRadius: 999, paddingVertical: 8, backgroundColor: mode === "in" ? colors.paper : "transparent" }}>
+                  <Text style={{ textAlign: "center", fontWeight: mode === "in" ? "700" : "400", color: mode === "in" ? colors.ink : colors.muted }}>ঢুকুন</Text>
+                </Pressable>
+                <Pressable onPress={() => { setMode("up"); setError(""); setNotice(""); }} style={{ flex: 1, borderRadius: 999, paddingVertical: 8, backgroundColor: mode === "up" ? colors.paper : "transparent" }}>
+                  <Text style={{ textAlign: "center", fontWeight: mode === "up" ? "700" : "400", color: mode === "up" ? colors.ink : colors.muted }}>নতুন অ্যাকাউন্ট</Text>
+                </Pressable>
+              </View>
+              <View style={{ gap: 12, marginTop: 20 }}>
+                {mode === "up" && <Field value={name} onChangeText={setName} placeholder="আপনার নাম" autoCapitalize="words" />}
+                <Field value={email} onChangeText={setEmail} placeholder="ইমেইল" keyboardType="email-address" />
+                <Field value={password} onChangeText={setPassword} placeholder="পাসওয়ার্ড" secure />
+                <ErrorText>{error}</ErrorText>
+                {notice ? <Text style={{ color: colors.good, lineHeight: 22 }}>{notice}</Text> : null}
+                <Button label={busy ? "অপেক্ষা করুন" : mode === "up" ? "অ্যাকাউন্ট খুলুন" : "ঢুকুন"} onPress={withEmail} busy={busy} />
+              </View>
+            </>
+          )}
+        </View>
+      </View>
     </Screen>
+  );
+}
+
+function GoogleMark() {
+  return (
+    <Svg width={18} height={18} viewBox="0 0 18 18">
+      <Path fill="#4285F4" d="M17.6 9.2c0-.6-.1-1.2-.2-1.8H9v3.4h4.8a4.1 4.1 0 0 1-1.8 2.7v2.2h2.9c1.7-1.6 2.7-3.9 2.7-6.5z" />
+      <Path fill="#34A853" d="M9 18c2.4 0 4.5-.8 6-2.2l-2.9-2.2c-.8.6-1.9.9-3.1.9-2.4 0-4.4-1.6-5.1-3.8H.9v2.3A9 9 0 0 0 9 18z" />
+      <Path fill="#FBBC05" d="M3.9 10.7A5.4 5.4 0 0 1 3.6 9c0-.6.1-1.2.3-1.7V5H.9A9 9 0 0 0 0 9c0 1.4.3 2.8.9 4l3-2.3z" />
+      <Path fill="#EA4335" d="M9 3.6c1.3 0 2.5.5 3.4 1.3L15 2.3A9 9 0 0 0 .9 5l3 2.3C4.6 5.2 6.6 3.6 9 3.6z" />
+    </Svg>
   );
 }

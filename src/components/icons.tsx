@@ -8,6 +8,14 @@ const stroke = {
   strokeLinejoin: "round" as const,
 };
 
+export function IconMessage({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path {...stroke} d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2zM7 9h10M7 13h6" />
+    </svg>
+  );
+}
+
 export function IconHome({ className }: Props) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden>

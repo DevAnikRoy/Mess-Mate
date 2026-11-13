@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { IconBag, IconBell, IconBill, IconDuty, IconHome, IconLogout, IconMeal, IconReport, IconSearch, IconUsers } from "./icons";
+import { IconBag, IconBell, IconBill, IconDuty, IconHome, IconLogout, IconMeal, IconMessage, IconReport, IconSearch, IconUsers } from "./icons";
 import { Avatar } from "./avatar";
 import { addMonths, dateLabel, monthName, monthOf } from "@/lib/dates";
 import { mealKey, upcomingDuty } from "@/lib/model";
@@ -20,6 +20,7 @@ const nav = [
   { href: "/report", label: "রিপোর্ট", icon: IconReport },
   { href: "/duties", label: "ডিউটি", icon: IconDuty },
   { href: "/mess", label: "মেস ও সদস্য", icon: IconUsers },
+  { href: "/whatsapp", label: "হোয়াটসঅ্যাপ বার্তা", icon: IconMessage },
 ];
 
 const mobile = [
@@ -265,6 +266,7 @@ function Chrome({ children }: { children: React.ReactNode }) {
           <Link href="/bills" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">ঘরের খরচ</Link>
           <Link href="/duties" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">ডিউটি</Link>
           <Link href="/mess" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">মেস ও সদস্য</Link>
+          <Link href="/whatsapp" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">হোয়াটসঅ্যাপ বার্তা</Link>
           <Link href="/account" onClick={() => setMore(false)} className="block rounded-2xl px-3 py-3 text-sm hover:bg-[#F7F4FF]">প্রোফাইল</Link>
           <button className="block w-full rounded-2xl px-3 py-3 text-left text-sm hover:bg-[#F7F4FF] disabled:opacity-60" disabled={leaving} onClick={leave} type="button">বের হন</button>
         </div>

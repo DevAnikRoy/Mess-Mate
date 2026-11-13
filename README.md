@@ -184,6 +184,24 @@ Add `messmate://auth/callback` to Supabase Auth redirect URLs so Google sign-in 
 
 ---
 
+## WhatsApp group feed
+
+The optional **হোয়াটসঅ্যাপ বার্তা** screen is available under **আরও** and **মেস ও সদস্য** on Android and the website. A manager can pair one Android phone with a group. Readable notifications from that selected conversation are copied into a private feed for current mess members. The feed retains the newest 500 messages, including any messages imported by the manager. Existing WhatsApp conversations and their membership stay in WhatsApp.
+
+Apply [`005_whatsapp_feed.sql`](supabase/migrations/005_whatsapp_feed.sql) after the existing migrations before using this screen. It adds separate feed tables, member-only read policies, manager controls, a revocable device credential, bounded ingestion and Realtime publication. The migration has been tested locally. It must also be applied to the deployed Supabase project when releasing the feature.
+
+The bridge requires Android 9 or later and a fresh native build. From `mobile/`, use `npx expo run:android` for local development, or the existing EAS preview build configuration for a signed APK. The local Expo module is in `mobile/modules/whatsapp-bridge`. Expo Go can display the feed and supports manual text import, while the notification listener is available in the custom native build.
+
+On the manager's phone, open **হোয়াটসঅ্যাপ বার্তা → সেটিংস**, read the disclosure, obtain the WhatsApp group's consent and enable notification access. Choose **গ্রুপ শনাক্ত করুন** and have another group member send the displayed code as a separate message. Keep the target chat closed on the bridge phone so WhatsApp can post its notification. Confirm the detected group. Setup requires a conversation shortcut identifier and group metadata from WhatsApp. Group names alone are insufficient. Pairing expires after ten minutes, and mirroring starts with subsequent notifications after confirmation.
+
+The Android listener filters other apps and conversations locally. Its credential and bounded retry queue are encrypted with Android Keystore and stored outside backups. Uploads use the public Supabase API key plus a device credential scoped to this mess. Manager handover, disconnect and replacing the bridge invalidate that credential. Members read through Supabase RLS and receive feed changes through Realtime. Signing out clears the local bridge. Keep message contents and device credentials out of logs and crash reports.
+
+Use a temporary QA mess and group to verify locked-screen delivery, private-chat isolation, identically named groups, background/reboot behavior, offline retries and permission revocation before a pilot. A physical-device check is still required. Media attachments, missed notifications, WhatsApp edits/deletions and complete history synchronization are outside the notification bridge's coverage. A manager can use **পুরনো বার্তা যোগ করুন** to preview and publish exported chat text. The website also accepts `.txt` uploads. Export timestamps are interpreted in Asia/Dhaka, with the date order selected in the preview.
+
+Check the privacy disclosure and distribution requirements before a public rollout. The Android permission grants broad notification access, and enabling mirroring makes selected group text available to current and future mess members. Free service usage remains subject to the shared hosting and Supabase quotas.
+
+Run `npm run test:whatsapp`, web lint and both TypeScript checks. The native conversation filter tests run with `./gradlew :whatsapp-bridge:testDebugUnitTest` inside the generated `mobile/android/` project.
+
 ## Roadmap
 
 These parts are planned but **not built yet**:

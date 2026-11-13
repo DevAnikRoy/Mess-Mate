@@ -99,6 +99,10 @@ export function MessScreen() {
     <Screen onRefresh={onRefresh} refreshing={refreshing}>
       <Text style={{ color: colors.muted, fontSize: 12 }}>মেস ও সদস্য</Text>
       <Text style={{ fontSize: 24, fontWeight: "700", marginBottom: 16 }}>{mess.name}</Text>
+      <Pressable onPress={() => router.push("/whatsapp")} accessibilityRole="button" style={{ padding: 16, borderRadius: 20, backgroundColor: colors.wash, marginBottom: 16 }}>
+        <Text style={{ color: colors.purple, fontWeight: "700" }}>হোয়াটসঅ্যাপ বার্তা</Text>
+        <Text style={{ color: colors.inkSoft, lineHeight: 22, marginTop: 4 }}>মেসের গ্রুপের বার্তা দেখুন{isManager ? " বা সংযোগ চালু করুন" : ""}</Text>
+      </Pressable>
       {welcome && isManager && (
         <View style={{ backgroundColor: colors.mint, borderRadius: 24, padding: 16, marginBottom: 16 }}>
           <Text style={{ fontWeight: "700" }}>মেস খোলা হয়েছে</Text>

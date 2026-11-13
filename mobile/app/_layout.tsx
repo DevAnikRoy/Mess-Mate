@@ -23,6 +23,7 @@ export default function RootLayout() {
           <Stack.Screen name="onboarding" options={{ headerShown: false }} />
           <Stack.Screen name="join/[code]" options={{ title: "মেসে যোগ দিন", headerStyle: { backgroundColor: colors.bg }, headerShadowVisible: false }} />
           <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
+          <Stack.Screen name="whatsapp" options={{ title: "মেসমেট", headerStyle: { backgroundColor: colors.paper }, headerShadowVisible: false }} />
         </Stack>
         <Toast />
       </AppProviders>

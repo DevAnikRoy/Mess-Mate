@@ -9,6 +9,7 @@ const items = [
   { href: "/bills", label: "ঘরের খরচ", hint: "ভাড়া, বিদ্যুৎ, গ্যাস", icon: "home-outline" as const },
   { href: "/duties", label: "ডিউটি", hint: "বাথরুম ও অন্য পালা", icon: "checkbox-outline" as const },
   { href: "/mess", label: "মেস ও সদস্য", hint: "ইনভাইট কোড, সেটিংস", icon: "people-outline" as const },
+  { href: "/whatsapp", label: "হোয়াটসঅ্যাপ বার্তা", hint: "মেসের গ্রুপের বার্তা", icon: "chatbubbles-outline" as const },
   { href: "/account", label: "প্রোফাইল", hint: "নাম ও অ্যাকাউন্ট", icon: "person-outline" as const },
 ];
 

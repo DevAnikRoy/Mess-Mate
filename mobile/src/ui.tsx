@@ -263,6 +263,9 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled || busy}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled: Boolean(disabled || busy), busy: Boolean(busy) }}
       android_ripple={ripple}
       style={[styles.btn, { backgroundColor: bg, opacity: disabled || busy ? 0.5 : 1 }]}
     >

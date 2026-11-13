@@ -102,6 +102,7 @@ const moreItems = [
   { href: "/bills", label: "ঘরের খরচ" },
   { href: "/duties", label: "ডিউটি" },
   { href: "/mess", label: "মেস ও সদস্য" },
+  { href: "/whatsapp", label: "হোয়াটসঅ্যাপ বার্তা" },
   { href: "/account", label: "প্রোফাইল" },
 ];
 

@@ -75,6 +75,7 @@ export async function proxy(request: NextRequest) {
     if (target) return next;
   }
 
+  if (path === "/admin" || path.startsWith("/admin/")) return response;
   const setup = path === "/onboarding" || path.startsWith("/join/");
   if (!inMess && !setup && path !== "/account") return redirectKeepingCookies(request, "/onboarding", response);
   if (inMess && setup) return redirectKeepingCookies(request, "/", response);

@@ -48,6 +48,7 @@ function useSignOut() {
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const store = useMaybeMess();
+  if (path === "/admin" || path.startsWith("/admin/")) return children;
   if (bare(path)) return children;
   if (!store) {
     return (
